@@ -1,0 +1,12 @@
+{
+  "name": "devtinder",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index",
+    "dev":"nodemon src/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
