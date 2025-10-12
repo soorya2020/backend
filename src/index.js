@@ -2,15 +2,22 @@ const express = require("express");
 const { userAuth } = require("./middleware/auth");
 const dbConnect = require("./config/database");
 const User = require("./model/user");
+require("dotenv").config();
+
+const SECRET_KEY = "soorya@dev123";
+
 const {
   validateSignUpData,
   validateLoginData,
 } = require("./utils/validations");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
   try {
@@ -47,8 +54,33 @@ app.post("/login", async (req, res) => {
     if (!isPasswordValid) {
       throw new Error("Invalid credentials");
     }
-
+    //token creation
+    const token = jwt.sign({ _id: user._id }, SECRET_KEY, {
+      expiresIn: "7d",
+    });
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "DEV",
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+    });
     res.send("login successful");
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error:" + error.message);
+  }
+});
+
+app.get("/profile", userAuth, async (req, res) => {
+  try {
+    const { token } = req.cookies;
+    const { _id: userId } = jwt.verify(token, SECRET_KEY);
+
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("unautharised access");
+    }
+    res.send(req.user);
   } catch (error) {
     console.error(error);
     res.status(400).send("Error:" + error.message);

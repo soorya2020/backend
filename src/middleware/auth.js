@@ -1,9 +1,24 @@
-const userAuth = (req, res, next) => {
-  if (true) {
-    console.log("soorya");
+const jwt = require("jsonwebtoken");
+const User = require("../model/user");
+
+const SECRET_KEY = "soorya@dev123";
+
+const userAuth = async (req, res, next) => {
+  try {
+    const { token } = req.cookies;
+    if (!token) {
+      throw new Error("no token found");
+    }
+    const { _id: userId } = jwt.verify(token, SECRET_KEY);
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("user not found");
+    }
+    req.user = user;
     next();
-  } else {
-    res.send("unautharised");
+  } catch (error) {
+    console.error(error.message);
+    res.status(400).send("Error:" + error.message);
   }
 };
 
