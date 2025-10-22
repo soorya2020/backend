@@ -113,7 +113,7 @@ router.post(
         toUserId: currentUserId,
         status: "interested",
       });
-      console.log(connectionRequestId, currentUserId);
+
       if (!connectionRequest) {
         throw new Error("connection request not found");
       }
@@ -124,6 +124,8 @@ router.post(
         .status(201)
         .json({ message: `${reviewStatus} successfully`, data: data });
     } catch (error) {
+      console.log(error);
+      
       res.status(400).send("ERROR: " + error.message);
     }
   }

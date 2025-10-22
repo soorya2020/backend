@@ -18,6 +18,8 @@ const validateLoginData = ({ email }) => {
 
 const validateEditProfileData = (profileData) => {
   const ALLOWED_EDIT_VALUES = [
+    "firstName",
+    "lastName",
     "age",
     "gender",
     "about",

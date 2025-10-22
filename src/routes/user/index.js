@@ -5,7 +5,8 @@ const router = express.Router();
 const { formatFetchData } = require("./helper");
 const User = require("../../model/user");
 
-const SAFE_USER_FIELDS = "firstName lastName age about skills profileUrl";
+const SAFE_USER_FIELDS =
+  "firstName lastName age about skills profileUrl gender";
 
 router.get("/user/request/recieved", userAuth, async (req, res) => {
   try {
@@ -19,9 +20,11 @@ router.get("/user/request/recieved", userAuth, async (req, res) => {
       select: SAFE_USER_FIELDS,
     });
 
-    const data = formatFetchData(requests);
+    // const data = formatFetchData(requests);
 
-    res.status(200).json({ message: "data fetched successfully", data });
+    res
+      .status(200)
+      .json({ message: "data fetched successfully", data: requests });
   } catch (error) {
     res.status(400).send("Error : " + error.message);
   }
@@ -76,6 +79,8 @@ router.get("/user/feeds", userAuth, async (req, res) => {
     });
 
     const excludedUserIds = new Set();
+    excludedUserIds.add(loggedInUserId); // avoid showing self
+
     userConnections.forEach((user) => {
       excludedUserIds.add(user.fromUserId.toString());
       excludedUserIds.add(user.toUserId.toString());
