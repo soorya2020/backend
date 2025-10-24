@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const uri = `mongodb+srv://sooryakrishnanunni_db_user:yW9A0NhohTD5Aij2@cluster0.28vv3on.mongodb.net/dev_connect?retryWrites=true&w=majority&appName=Cluster0`;
+
 const dbConnect = async () => {
-  await mongoose.connect(uri);
+  await mongoose.connect(process.env.DB_SECRET_STRING);
 };
 
 module.exports = dbConnect;

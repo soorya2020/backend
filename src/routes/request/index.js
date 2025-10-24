@@ -4,6 +4,7 @@ const { userAuth } = require("../../middleware/auth");
 
 const User = require("../../model/user");
 const ConnectionRequest = require("../../model/connectionRequest");
+const sendEmail = require("../../utils/sesSendEmail");
 
 // TODO: MOVE THIS TO  PROFILE
 router.patch("/user/:userId", async (req, res) => {
@@ -84,6 +85,15 @@ router.post("/request/send/:status/:userId", userAuth, async (req, res) => {
       status: requestStatus,
     });
     const newConnectionData = await connectionRequest.save();
+    const body = "you have a request, lets connect together via gittogether";
+    const subject = "gittogether connection request ";
+    const emailResponse = await sendEmail.run(
+      subject,
+      body,
+      req.user.firstName
+    );
+    console.log(emailResponse, "my email resonse");
+
     res.status(200).json({
       message: `${requestStatus} successfully`,
       data: newConnectionData,
@@ -125,7 +135,7 @@ router.post(
         .json({ message: `${reviewStatus} successfully`, data: data });
     } catch (error) {
       console.log(error);
-      
+
       res.status(400).send("ERROR: " + error.message);
     }
   }

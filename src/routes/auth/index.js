@@ -123,6 +123,11 @@ router.post("/logout", (req, res) => {
       sameSite: "none",
       expires: new Date(Date.now()), // or Date.now()
     });
+    // res.clearCookie("token", { //try this next time
+    //   httpOnly: true,
+    //   secure: true,
+    //   sameSite: "none",
+    // });
     res.status(200).json({ message: "logout successfull" });
   } catch (error) {
     res.status(400).send("Error:" + error.message);

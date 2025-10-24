@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const dbConnect = require("./config/database");
 const User = require("./model/user");
@@ -61,7 +62,7 @@ app.patch("/user/:userId", async (req, res) => {
 dbConnect()
   .then(() => {
     console.log("db connected successfully");
-    app.listen(3000, () => {
+    app.listen(process.env.PORT, () => {
       console.log("server running at 3000");
     });
   })
