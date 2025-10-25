@@ -22,7 +22,7 @@ const connectionRequestSchema = mongoose.Schema(
     },
   },
   {
-    Timestamp: true,
+    timestamps: true,
   }
 );
 
