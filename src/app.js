@@ -8,8 +8,10 @@ const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 const paymentRouter = require("./routes/payment");
+const http = require("http");
 
 require("./utils/cornJob");
+const { initializeSocket } = require("./utils/socketIo");
 
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
@@ -63,10 +65,14 @@ app.patch("/user/:userId", async (req, res) => {
   }
 });
 
+const httpServer = http.createServer(app);
+
+initializeSocket(httpServer);
+
 dbConnect()
   .then(() => {
     console.log("db connected successfully");
-    app.listen(process.env.PORT, () => {
+    httpServer.listen(process.env.PORT, () => {
       console.log("server running at 3000");
     });
   })

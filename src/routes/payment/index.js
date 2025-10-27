@@ -57,7 +57,7 @@ router.post("/payment/webhook", async (req, res) => {
     if (!isValid) {
       return res.status(400).json({ message: "Invalid signature" });
     }
-
+  
     const paymentDetails = req.body.payload.payment.entity;
     //update payment db
     const payment = await Payments.findOne({
@@ -80,6 +80,20 @@ router.post("/payment/webhook", async (req, res) => {
 
     res.status(200).json({ message: "Webhook received" });
   } catch (error) {
+    console.error(error);
+    res.status(400).send({ message: error.message });
+  }
+});
+
+router.get("/payment/verify", userAuth, async (req, res) => {
+  try {
+    const user = req.user;
+    if (user.isPremium) {
+      return res.status(200).json({ isPremium: user.isPremium });
+    } else {
+      return res.status(200).json({ isPremium: user.isPremium });
+    }
+  } catch {
     console.error(error);
     res.status(400).send({ message: error.message });
   }
