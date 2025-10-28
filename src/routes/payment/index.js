@@ -57,7 +57,7 @@ router.post("/payment/webhook", async (req, res) => {
     if (!isValid) {
       return res.status(400).json({ message: "Invalid signature" });
     }
-  
+
     const paymentDetails = req.body.payload.payment.entity;
     //update payment db
     const payment = await Payments.findOne({

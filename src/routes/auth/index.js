@@ -2,8 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../../model/user");
 const { userAuth } = require("../../middleware/auth");
-const SAFE_USER_FIELDS =
-  "firstName lastName age about skills profileUrl isPremium";
+
 
 const {
   validateSignUpData,
