@@ -72,6 +72,8 @@ router.post("/payment/webhook", async (req, res) => {
     const user = await User.findOne({ _id: payment.userId });
     user.isPremium = true;
     user.memberShipType = payment.notes.memberShipType;
+    console.log(user, "new user");
+
     await user.save();
 
     // if (req.body.event === "payment.captured") {

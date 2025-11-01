@@ -3,6 +3,9 @@ const router = express.Router();
 const User = require("../../model/user");
 const { userAuth } = require("../../middleware/auth");
 
+const jwt = require("jsonwebtoken");
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const {
   validateSignUpData,
@@ -70,16 +73,19 @@ router.post("/login", async (req, res) => {
       secure: process.env.NODE_ENV === "DEV",
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
     });
+    const { password, ...safeUserValues } = user.toObject();
     res.status(200).json({
       message: "login successful",
-      user: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        age: user?.age,
-        skills: user?.skills,
-        about: user?.about,
-        profileUrl: user?.profileUrl,
-      },
+      user: safeUserValues,
+      // user: {
+      //   _id: user._id,
+      //   firstName: user.firstName,
+      //   lastName: user.lastName,
+      //   age: user?.age,
+      //   skills: user?.skills,
+      //   about: user?.about,
+      //   profileUrl: user?.profileUrl,
+      // },
     });
   } catch (error) {
     console.error(error);
@@ -92,7 +98,6 @@ router.put("/password", userAuth, async (req, res) => {
     const { newPassword, oldPassword } = req.body;
     const loggedInUser = req.user;
     const isPasswordValid = await loggedInUser.validatePassword(oldPassword);
-    console.log(isPasswordValid);
 
     if (!isPasswordValid) {
       res.send("old password do not match");
@@ -113,24 +118,62 @@ router.put("/password", userAuth, async (req, res) => {
 
 router.post("/logout", (req, res) => {
   try {
-    // res.cookie("token", null, {
-    //   expires: new Date(Date.now()),
-    // });
-
     res.cookie("token", "", {
       httpOnly: true,
       secure: true,
       sameSite: "none",
       expires: new Date(Date.now()), // or Date.now()
     });
-    // res.clearCookie("token", { //try this next time
-    //   httpOnly: true,
-    //   secure: true,
-    //   sameSite: "none",
-    // });
+
     res.status(200).json({ message: "logout successfull" });
   } catch (error) {
     res.status(400).send("Error:" + error.message);
+  }
+});
+
+router.post("/auth/google-login", async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    // Verify Google token
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture, sub } = payload;
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        email,
+        firstName: name,
+        googleId: sub,
+        profileUrl: picture,
+      });
+    }
+
+    // Create JWT
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    // Set as cookie
+    res.cookie("token", token, {
+      secure: true,
+      httpOnly: true,
+      sameSite: "lax",
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+    });
+
+    res.status(200).json({ message: "Google login successful", user });
+  } catch (error) {
+    console.error(error);
+
+    res.status(400).json({ message: "Google login failed" });
   }
 });
 

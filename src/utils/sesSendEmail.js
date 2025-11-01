@@ -39,9 +39,11 @@ const createSendEmailCommand = (toAddress, fromAddress, subject, body) => {
 };
 
 const run = async (subject, body, fromUserName) => {
+  const sanitizedSender =
+    fromUserName?.toLowerCase().replace(/[^a-z0-9]/g, "") || "noreply";
   const sendEmailCommand = createSendEmailCommand(
     "gopugpoyyara@gmail.com", // "recipient@example.com",
-    fromUserName + "@gittogether.co.in", // "sender@example.com",
+    `${sanitizedSender}@gittogether.co.in`, // sanitized sender
     subject,
     body
   );

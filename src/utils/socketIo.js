@@ -20,10 +20,8 @@ const initializeSocket = (httpServer) => {
         let chat = await Chat.findOne({
           participants: { $all: [userId, toUserId] },
         });
-        console.log(chat);
 
         if (!chat) {
-          console.log(chat);
           chat = new Chat({
             participants: [userId, toUserId],
             messages: [],
@@ -33,7 +31,7 @@ const initializeSocket = (httpServer) => {
         await chat.save();
         io.to(roomId).emit("messageRecieved", { senderId:userId,firstName, text });
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     });
     socket.on("disconnect", () => {});

@@ -27,7 +27,6 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: "true",
     },
     age: {
       type: String,
@@ -60,6 +59,9 @@ const userSchema = new mongoose.Schema(
     },
     memberShipType: {
       type: String,
+    },
+    googleId: {
+      type: "string",
     },
   },
   { timestamps: true }

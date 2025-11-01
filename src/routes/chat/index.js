@@ -8,14 +8,17 @@ const SAFE_USER_FIELDS =
 
 router.get("/chat/:toUserId", userAuth, async (req, res) => {
   try {
+
     const { toUserId } = req.params;
     const { _id: userId } = req.user;
     const chat = await Chat.findOne({
       participants: { $all: [userId, toUserId] },
+      // messages: { $slice: -limit },
     }).populate({
       path: "messages.senderId",
       select: "firstName lastName",
     });
+
     if (!chat) {
       chat = new Chat({
         participants: [userId, toUserId],
@@ -32,8 +35,9 @@ router.get("/chat/:toUserId", userAuth, async (req, res) => {
 router.get("/chat/targetUser/:recieverId", userAuth, async (req, res) => {
   try {
     const { recieverId } = req.params;
-    const data = await User.findOne({ _id: recieverId }).select(SAFE_USER_FIELDS);
-    console.log(data);
+    const data = await User.findOne({ _id: recieverId }).select(
+      SAFE_USER_FIELDS
+    );
 
     res.status(200).json({ message: "data fetched successfullu", data });
   } catch (error) {

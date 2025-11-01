@@ -30,7 +30,6 @@ router.patch("/user/:userId", async (req, res) => {
     const user = await User.findByIdAndUpdate(userId, data, {
       runValidators: true,
     });
-    console.log("update: " + user);
 
     res.status(201).send("user updated successfully");
   } catch (error) {
@@ -85,6 +84,7 @@ router.post("/request/send/:status/:userId", userAuth, async (req, res) => {
       status: requestStatus,
     });
     const newConnectionData = await connectionRequest.save();
+
     const body = "you have a request, lets connect together via gittogether";
     const subject = "gittogether connection request ";
     const emailResponse = await sendEmail.run(
@@ -92,7 +92,6 @@ router.post("/request/send/:status/:userId", userAuth, async (req, res) => {
       body,
       req.user.firstName
     );
-    console.log(emailResponse, "my email resonse");
 
     res.status(200).json({
       message: `${requestStatus} successfully`,
@@ -134,7 +133,7 @@ router.post(
         .status(201)
         .json({ message: `${reviewStatus} successfully`, data: data });
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       res.status(400).send("ERROR: " + error.message);
     }

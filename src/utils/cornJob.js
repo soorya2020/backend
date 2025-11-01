@@ -23,7 +23,6 @@ cron.schedule("5 8 * * *", async () => {
 
     for (const email of listOfEmails) {
       // instaed of
-      console.log(email);
 
       try {
         const res = await sentEmail.run(
@@ -32,11 +31,10 @@ cron.schedule("5 8 * * *", async () => {
           email.split("@")[0]
         );
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     }
-    console.log(listOfEmails);
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 });
