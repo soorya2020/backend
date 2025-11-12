@@ -5,7 +5,9 @@ const Chat = require("../model/chat");
 const initializeSocket = (httpServer) => {
   const io = socket(httpServer, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: ["http://localhost:4000", "https://gittogether.co.in"], // allowed origins
+      methods: ["GET", "POST"],
+      credentials: true,
     },
   });
 
@@ -29,7 +31,11 @@ const initializeSocket = (httpServer) => {
         }
         chat.messages.push({ senderId: userId, text });
         await chat.save();
-        io.to(roomId).emit("messageRecieved", { senderId:userId,firstName, text });
+        io.to(roomId).emit("messageRecieved", {
+          senderId: userId,
+          firstName,
+          text,
+        });
       } catch (error) {
         console.error(error);
       }

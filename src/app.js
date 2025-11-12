@@ -18,13 +18,19 @@ const { initializeSocket } = require("./utils/socketIo");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
+
+const allowedOrigins = ["http://localhost:4000", "https://gittogether.co.in"];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     credentials: true,
   })
 );
@@ -75,7 +81,9 @@ dbConnect()
   .then(() => {
     console.log("db connected successfully");
     httpServer.listen(process.env.PORT, () => {
-      console.log("server running at 3000");
+      console.log(
+        `✅ Server running on port ${process.env.PORT} in ${process.env.NODE_ENV} `
+      );
     });
   })
   .catch((err) => console.log("something went wrong with db : ", err));

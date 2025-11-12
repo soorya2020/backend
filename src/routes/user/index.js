@@ -6,7 +6,7 @@ const { formatFetchData } = require("./helper");
 const User = require("../../model/user");
 
 const SAFE_USER_FIELDS =
-  "firstName lastName age about skills profileUrl gender";
+  "firstName lastName age about skills profileUrl gender isPremium";
 
 router.get("/user/request/recieved", userAuth, async (req, res) => {
   try {
