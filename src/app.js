@@ -25,15 +25,37 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-const allowedOrigins = ["http://localhost:4000", "https://gittogether.co.in"];
-
+const allowedOrigins = [
+  "http://localhost:4000",
+  "https://gittogether.co.in",
+  "http://v2.gittogether.co.in",
+  "https://v2.gittogether.co.in",
+  "http://v2.gittogether.co.in:4000",
+  "http://www.v2.gittogether.co.in",
+  "http://localhost:5173",
+  "http://localhost:5000",
+];
 app.use(
   cors({
-    origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   })
 );
+
+// app.use(
+//   cors({
+//     origin: allowedOrigins,
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+//     credentials: true,
+//   })
+// );
 
 app.use(authRouter);
 app.use(profileRouter);

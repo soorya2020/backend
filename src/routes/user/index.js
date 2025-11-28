@@ -49,13 +49,15 @@ router.get("/user/request/connections", userAuth, async (req, res) => {
         select: SAFE_USER_FIELDS,
       });
 
-    const connectionWithoutCurrentUser = connections.map((row) => {
-      if (row.fromUserId.equals(currentUserId)) {
-        return row.toUserId;
-      } else {
-        return row.fromUserId;
-      }
-    });
+    const connectionWithoutCurrentUser = connections
+      .map((row) => {
+        if (row.fromUserId && row.fromUserId.equals(currentUserId)) {
+          return row.toUserId;
+        } else {
+          return row.fromUserId;
+        }
+      })
+      .filter(Boolean);
 
     res.json({
       message: "connection fetched successfully",
