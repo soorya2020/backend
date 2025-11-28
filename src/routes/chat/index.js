@@ -8,10 +8,9 @@ const SAFE_USER_FIELDS =
 
 router.get("/chat/:toUserId", userAuth, async (req, res) => {
   try {
-
     const { toUserId } = req.params;
     const { _id: userId } = req.user;
-    const chat = await Chat.findOne({
+    let chat = await Chat.findOne({
       participants: { $all: [userId, toUserId] },
       // messages: { $slice: -limit },
     }).populate({
@@ -28,6 +27,7 @@ router.get("/chat/:toUserId", userAuth, async (req, res) => {
 
     res.status(200).json({ message: "chat fetched successfully", data: chat });
   } catch (error) {
+    console.error(error);
     res.status(400).json("Error: " + error.message);
   }
 });

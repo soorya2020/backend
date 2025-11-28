@@ -5,7 +5,11 @@ const Chat = require("../model/chat");
 const initializeSocket = (httpServer) => {
   const io = socket(httpServer, {
     cors: {
-      origin: ["http://localhost:4000", "https://gittogether.co.in"], // allowed origins
+      origin: [
+        "http://localhost:4000",
+        "https://gittogether.co.in",
+        "http://localhost:5173",
+      ], // allowed origins
       methods: ["GET", "POST"],
       credentials: true,
     },
