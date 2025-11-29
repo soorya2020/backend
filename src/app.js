@@ -34,6 +34,7 @@ const allowedOrigins = [
   "http://www.v2.gittogether.co.in",
   "http://localhost:5173",
   "http://localhost:5000",
+  "http://51.20.86.100:4000"
 ];
 app.use(
   cors({
