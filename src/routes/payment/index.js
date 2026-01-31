@@ -9,9 +9,11 @@ const {
 } = require("razorpay/dist/utils/razorpay-utils");
 
 router.post("/payment/order", userAuth, async (req, res) => {
+  console.log("order triggered");
+
   try {
     const order = await razorpayInstance.orders.create({
-      amount: 50000,
+      amount: 50000, //500 rupees
       currency: "INR",
       receipt: `receipt#${req.user._id}`,
       notes: {
@@ -46,55 +48,67 @@ router.post("/payment/order", userAuth, async (req, res) => {
 });
 
 router.post("/payment/webhook", async (req, res) => {
+  console.log("webhook triggered");
   const webhookSignature = req.headers["x-razorpay-signature"];
 
   try {
+    // 1. Validate using the RAW BODY we captured in app.js
+    // DO NOT use JSON.stringify(req.body) anymore
     const isValid = validateWebhookSignature(
-      JSON.stringify(req.body),
+      req.rawBody,
       webhookSignature,
-      process.env.RAZORPAY_WEBHOOK_SECRET
+      process.env.RAZORPAY_WEBHOOK_SECRET,
     );
+
+    console.log(isValid, "isvalid");
+
     if (!isValid) {
+      console.log("❌ Signature mismatch! Secret or RawBody is incorrect.");
       return res.status(400).json({ message: "Invalid signature" });
     }
 
-    const paymentDetails = req.body.payload.payment.entity;
-    //update payment db
-    const payment = await Payments.findOne({
-      orderId: paymentDetails.order_id,
-    });
-    payment.status = paymentDetails.status;
-    payment.paymentId = paymentDetails.id;
-    payment.method = paymentDetails.method;
-    await payment.save();
+    // 2. Only run your logic if the payment was actually captured
+    // Razorpay sends many events (created, authorized, etc.), we only care about 'captured'
+    if (req.body.event === "payment.captured") {
+      const paymentDetails = req.body.payload.payment.entity;
 
-    //update user db
-    const user = await User.findOne({ _id: payment.userId });
-    user.isPremium = true;
-    user.memberShipType = payment.notes.memberShipType;
-    console.log(user, "new user");
+      // Update payment db
+      const payment = await Payments.findOne({
+        orderId: paymentDetails.order_id,
+      });
 
-    await user.save();
+      if (payment) {
+        payment.status = paymentDetails.status;
+        payment.paymentId = paymentDetails.id;
+        payment.method = paymentDetails.method;
+        await payment.save();
 
-    // if (req.body.event === "payment.captured") {
-    //   console.log("💰 Payment captured:", payment.id, payment.amount);
-    // }
+        // Update user db
+        const user = await User.findOne({ _id: payment.userId });
+        if (user) {
+          user.isPremium = true;
+          // Use the memberShipType stored in the payment notes
+          user.memberShipType = payment.notes?.memberShipType || "premium";
+          await user.save();
+          console.log(`✅ User ${user.firstName} upgraded to premium!`);
+        }
+      }
+    }
 
+    // 3. Always return 200 to Razorpay so they don't keep retrying
     res.status(200).json({ message: "Webhook received" });
   } catch (error) {
-    console.error(error);
-    res.status(400).send({ message: error.message });
+    console.error("Webhook Error:", error);
+    res.status(500).send({ message: error.message });
   }
 });
 
 router.get("/payment/verify", userAuth, async (req, res) => {
+
   try {
-    const user = req.user;
-    if (user.isPremium) {
-      return res.status(200).json({ isPremium: user.isPremium });
-    } else {
-      return res.status(200).json({ isPremium: user.isPremium });
-    }
+    // Re-fetch user from DB to get the LATEST status from the webhook
+    const currentUser = await User.findById(req.user._id);
+    return res.status(200).json({ isPremium: currentUser.isPremium });
   } catch {
     console.error(error);
     res.status(400).send({ message: error.message });

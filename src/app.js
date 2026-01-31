@@ -22,9 +22,14 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const app = express();
 
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req, res, buf) => {
+      req.rawBody = buf.toString(); // This saves the untouched string from Razorpay
+    },
+  }),
+);
 app.use(cookieParser());
-
 
 const allowedOrigins = [
   "http://localhost:4000",
@@ -36,7 +41,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5000",
-  "http://51.20.86.100"
+  "http://51.20.86.100",
 ];
 app.use(
   cors({
@@ -49,7 +54,7 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-  })
+  }),
 );
 
 // app.use(
@@ -82,7 +87,7 @@ app.patch("/user/:userId", async (req, res) => {
       "email",
     ];
     const isUpdateAllowed = Object.keys(data).every((k) =>
-      ALLOWED_UPDATES.includes(k)
+      ALLOWED_UPDATES.includes(k),
     );
     if (!isUpdateAllowed) {
       throw new Error("update not possible");
@@ -107,7 +112,7 @@ dbConnect()
     console.log("db connected successfully");
     httpServer.listen(process.env.PORT, () => {
       console.log(
-        `✅ Server running on port ${process.env.PORT} in ${process.env.NODE_ENV} `
+        `✅ Server running on port ${process.env.PORT} in ${process.env.NODE_ENV} `,
       );
     });
   })
